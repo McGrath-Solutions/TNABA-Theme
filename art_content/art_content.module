@@ -1,0 +1,297 @@
+<?php
+// $Id$ 
+
+include(drupal_get_path('module', 'art_content') . '/content/content-parser.php' );
+include(drupal_get_path('module', 'art_content') . '/content/path-parser.php' );
+include(drupal_get_path('module', 'art_content') . '/content/ms-proccess.php' );
+
+function art_get_content_parser() {
+  $parser = new Theme_Content_Parser(drupal_get_path('module', 'art_content') . '/content/content.xml');
+  return $parser;
+}
+
+/**
+ * Implementation of hook_menu()
+ */
+function art_content_menu() {
+  art_content_create_custom_menu();
+
+  $items = array();
+  $items['admin/config/content/art_content']  = array(
+    'title' => 'Artisteer Content Import',
+    'description' => 'Import content from Artisteer',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('art_content_form'), 
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 0,
+  );
+ 
+  return $items;
+}
+
+function art_content_create_custom_menu() {
+  $art_hmenu = array();
+  $art_vmenu = array();
+
+  $art_hmenu['menu_name'] = "ms-hmenu";
+  $art_hmenu['title'] = "Horizontal menu";
+  $art_hmenu['description'] = "<em>Artisteer Horizontal</em> menu contains links of horizontal navigation";
+
+  $art_vmenu['menu_name'] = "ms-vmenu";
+  $art_vmenu['title'] = art_vertical_menu_title_process();
+  $art_vmenu['description'] = "<em>Artisteer Vertical</em> menu contains links of vertical navigation";
+
+  menu_save($art_hmenu);
+  menu_save($art_vmenu);
+}
+
+function art_content_form($node, &$form_state) {
+  $def_value = variable_get('import_content', 0);
+
+  $form['art_content_form'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Artisteer Content Import')
+  );
+
+  // Create the form widgets using Forms API
+  $form['art_content_form']['import_content'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Artisteer Content Import'),
+    '#default_value' => $def_value,
+    '#return_value' => 1,
+  );
+
+  $form['art_content_form']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Import')
+  );
+
+  return $form;
+}
+/**
+* Implementation of hook_block_view().
+*/
+function art_content_block_view($delta = '') {
+  $def_value = variable_get('import_content', 0);
+  if ($def_value == 0) return;
+
+  $parser = art_get_content_parser();
+  $art_blocks = art_process_sidebars($parser);
+  $block = $art_blocks != NULL && array_key_exists($delta, $art_blocks) ? $art_blocks[$delta] : NULL;
+  return $block;
+}
+
+/**
+* Implementation of hook_block_info().
+*/
+function art_content_block_info() {
+  $blocks = array();
+  $def_value = variable_get('import_content', 0);
+  if ($def_value == 0) return $blocks;
+  
+  $parser = art_get_content_parser();
+  $art_blocks = art_process_sidebars($parser);
+  return $art_blocks;
+}
+
+function art_insert_posts($type, $posts_info, $pages_path = NULL, $posts_nid = NULL) {
+  $nodes_nid = array();
+  if (!$posts_info || ! isset( $posts_info ) ) {
+    return $nodes_nid;
+  }
+
+  $is_front_page = TRUE;
+  $weight = -48;
+  $nodes = array();
+  $vmenu_plids = array();
+  $art_styles = array();
+  $art_head = array();
+  foreach ( $posts_info as $post ) {
+    // gets parent for current node by parent path
+    $parent_path = isset($post['parent_path']) ? $post['parent_path'] : NULL;
+    $parent = isset($node) && array_key_exists($parent_path, $nodes) ? $nodes[$parent_path] : NULL;
+    $hmenu_plid = isset($parent) ? $parent->menu['mlid'] : 0;
+    $vmenu_plid = isset($vmenu_plids) && array_key_exists($parent_path, $vmenu_plids) ? $vmenu_plids[$parent_path] : 0;
+    
+    $teaser = '';
+    $node_content = art_modify_content_paths($post['content'], $pages_path);
+    if (isset($post['posts_page']) && $post['posts_page']) {
+      $node_content = art_posts_page_build($node_content, $posts_nid);
+      $teaser = text_summary('ART_BLOG_PAGE');
+    } else {
+      $teaser = text_summary($node_content);
+    }
+
+    $id = rand();
+    $node = new stdClass();
+    $node->type = $type;
+    node_object_prepare($node);
+    $node->title = $post['title'];
+    $cut_path = art_get_cut_path($post['path']);
+    $node->path = array('alias' => $cut_path);
+    $node->language = LANGUAGE_NONE;
+    $node->uid = $id;
+    $node->created = time();
+    $node->name = $post['name'];
+    $node->status = 1;
+    $node->promote = 1;
+    $node->format = 2;
+    $node->body = array(LANGUAGE_NONE => array(
+        array(
+            'value' => $node_content,
+            'format' => 'full_html',
+            'summary' => $teaser,
+        ),
+    ));
+    
+    if ($post['show_in_hmenu']) {
+      $node->menu =
+        array(
+            'mlid' => 0,
+            'enabled' => 1,
+            'module' => 'menu',
+            'hidden' => 0,
+            'has_children' => isset($post['has_sub_pages']) ? (int)$post['has_sub_pages'] : 0,
+            'customized' => 0,
+            'options' => array (),
+            'expanded' => '1',
+            'parent_depth_limit' => 8,
+            'link_title' => $post['caption'],
+            'description' => $post['caption'],
+            'parent' => 'ms-hmenu:'.(string)$hmenu_plid,
+            'plid' => $hmenu_plid,
+            'weight' => $weight,
+            'menu_name' => 'ms-hmenu',
+            'link_path' => $cut_path,
+            'depth'=> 1 
+      );
+    }
+
+    $node->validated = true;
+    $node = node_submit($node); // Prepare node for a submit
+    node_save($node);
+    $nid = $node->nid;
+
+    if ($post['show_in_vmenu']) {
+      $vmenu_item =
+        array(
+          'mlid' => 0,
+          'options' => array (),
+          'expanded' => '1',
+          'link_title' => $post['caption'],
+          'plid' => $vmenu_plid,
+          'weight' => $weight,
+          'menu_name' => 'ms-vmenu',
+          'link_path' => 'node/'.$nid,
+        );
+      $vmenu_plids[$post['path']] = menu_link_save($vmenu_item);
+    }
+    if (isset($post['styles'])) $art_styles[$nid] = $post['styles'];
+    $description = isset($post['description']) ? $post['description'] : '';
+    $keywords = isset($post['keywords']) ? $post['keywords'] : '';
+    $metatags = isset($post['metatags']) ? $post['metatags'] : '';
+    $post_head = isset($post['head']) ? $post['head'] : '';
+    $art_head[$nid] = $description . $keywords . $metatags . $post_head;
+    if (isset($post['path'])) { // save all nodes
+      $nodes[$post['path']] = $node;
+    }
+    if ($is_front_page && $type == 'page') { // set first Artisteer page as home page
+      variable_set('site_frontpage', $cut_path);
+      $is_front_page = FALSE;
+    }
+
+    $weight++;
+    $nodes_nid[] = $nid;
+  }
+
+  variable_set('art_styles', $art_styles);
+  variable_set('art_head', $art_head);
+  unset($nodes);
+  unset($vmenu_plids);
+
+  return $nodes_nid;
+}
+
+function art_posts_page_build($content, $nodes_nid) {
+  if (!isset($nodes_nid)) {
+    return $content;
+  }
+
+  $result = $content;
+  $joined_content = '';
+  $is_mulitple_layout = substr_count($content, "{content}") > 1;
+  $pattern = "/" . preg_quote("{content}") . "/";
+  $length = sizeof($nodes_nid);
+  for ($index = 0; $index < $length; $index++) {
+    $nid = $nodes_nid[$index];
+    $node = db_select('node', 'n')
+      ->fields('n')
+      ->condition('n.nid', $nid)
+      ->execute()
+      ->fetchObject();
+    $node_content = db_select('field_data_body', 'f')
+      ->fields('f', array('body_value'))
+      ->condition('f.entity_id', $nid)
+      ->execute()
+      ->fetchField();
+    $node_content = text_summary($node_content);
+    $node_path = base_path().'node/'.$nid;
+    $node_type = $node->type;
+    $node_title = '<a href="'.$node_path.'">'.$node->title.'</a>';
+    $node_readmore = t('Read more');
+    $node_date = format_date($node->created);
+    $node_user_name = '<a href="'.base_path().'user/1">'.'Admin'.'</a>'; //$node->uid $node_user
+    $node_comments = art_comment_link($nid);
+    $replace = <<<EOT
+<div id="node-$nid" class="node $node_type">
+<article class="ms-post ms-article">
+                                <div class="ms-postmetadataheader">
+                                        <h2 class="ms-postheader">$node_title
+</h2>
+                                    </div>
+                                                <div class="ms-postheadericons ms-metadata-icons">
+<span class="ms-postdateicon">$node_date</span>&nbsp;|&nbsp;<span class="ms-postauthoricon">$node_user_name</span>
+</div>
+                <div class="ms-postcontent ms-postcontent-0 clearfix">$node_content
+<br/>
+<a href="$node_path" title="$node_readmore">$node_readmore</a>
+</div>
+                                <div class="ms-postfootericons ms-metadata-icons">
+<span class="ms-postcommentsicon">$node_comments</span>
+</div>
+                </article></div>
+
+EOT;
+    if ($is_mulitple_layout) {
+      $result = preg_replace($pattern, $replace, $result, 1);
+    }
+    else {
+      $joined_content .= $replace;
+    }
+  }
+  if (!$is_mulitple_layout ) {
+    $result = preg_replace($pattern, $joined_content, $result, 1);
+  }
+  $result = preg_replace($pattern, '', $result);
+  return $result;
+}
+
+function art_content_clear_previous_import() {
+  $node_nids = variable_get('art_node_nids', NULL);
+  if (!isset($node_nids)) {
+    return;
+  }
+
+  foreach ($node_nids as $nid) {
+    db_delete('node')
+      ->condition('nid', $nid)
+      ->execute();
+    db_delete('menu_links')
+      ->condition('link_path', 'node/'.$nid)
+      ->execute();
+    db_delete('url_alias')
+      ->condition('source', 'node/'.$nid)
+      ->execute();
+  }
+}

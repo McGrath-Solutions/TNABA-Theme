@@ -1,0 +1,147 @@
+/* Created by Artisteer v4.0.0.58475 */
+
+.clearfix {
+   zoom: expression(this.runtimeStyle.zoom="1", this.appendChild(document.createElement("br")).className="cleared");
+}
+
+.ms-textblock > div {
+   display: block;
+   line-height: normal;
+   zoom: 1;
+}
+
+.ms-hmenu>li, .ms-hmenu>li>a
+{
+   display: inline !important;
+   zoom: 1;
+   float: none !important;
+   vertical-align: top;
+}
+ul.ms-hmenu, ul.ms-hmenu ul {
+   zoom: expression(this.runtimeStyle.zoom="1", this.appendChild(document.createElement("br")).className="cleared");
+}
+ul.ms-hmenu>li:first-child {
+   padding-right:9px;
+}
+ul.ms-hmenu>li{
+   zoom:expression(runtimeStyle.zoom=1,insertBefore(document.createElement('span'),firstChild).className='ms-hmenu-separator');
+}
+ul.ms-hmenu>li>span.ms-hmenu-separator
+{
+   position:absolute;
+   display: block;
+   top:0;
+   left:  -9px;
+   width: 9px;
+   height: 31px;
+   background: url('images/menuseparator.png') center center no-repeat;
+}
+ul.ms-hmenu>li:first-child>span.ms-hmenu-separator
+{
+   display:none;
+}
+
+ul.ms-hmenu ul{
+   background-color: #C3C3D5 !important;
+}
+
+.ms-header
+{
+   z-index: 1;
+}
+
+.ms-content-layout, .ms-content-layout-row, .ms-layout-cell 
+{
+   display: block;
+   zoom: 1;
+}
+.ms-layout-cell
+{
+   position:relative;
+   float: left;
+   clear: right;
+}
+
+ul.ms-vmenu, ul.ms-vmenu ul, ul.ms-vmenu li{
+   zoom: 1;
+}
+
+ul.ms-vmenu ul 
+{
+}
+
+input[type="text"]
+{
+   margin:0 0 0 -3px;
+   zoom:expression(runtimeStyle.zoom = 1, parentNode.insertBefore(document.createElement('div'), this).appendChild(this));
+}
+
+* html input[type="text"]
+{
+   margin :0;
+}
+
+form.ms-search>input[type="text"]
+{
+   margin:0 0 0 -3px;
+   zoom:expression(runtimeStyle.zoom = 1, parentNode.insertBefore(document.createElement('div'), this).appendChild(this));
+}
+
+form.ms-search div>input[type="text"]
+{
+   width: 100%;
+}
+
+* html form.ms-search>input[type="text"] 
+{
+   margin :0;
+}
+
+.ms-postmetadataheader{
+   zoom:1;
+}
+
+.ms-postheadericons span{
+   zoom: 1;
+}
+.ms-postcontent {
+   height: 1%;
+}
+
+.ms-postfootericons span{
+   zoom: 1;
+}
+.close-alt, .arrow-right-alt, .arrow-left-alt {
+   display: block !important;
+}
+.cw, .ccw {
+   display: none !important;
+}
+
+.ms-sidebar1
+{
+   background: none !important;
+   border: none !important;
+   zoom:expression(runtimeStyle.zoom=1, parentNode.parentNode.insertBefore(document.createElement('div'),parentNode.parentNode.firstChild).className='ms-sidebar1-bg' + (className.indexOf('ms-sidebar1-fix') == -1 ? '' : ' ms-sidebar1-bg-fix' ));
+}
+
+.ms-sidebar1-bg 
+{
+   position:absolute;
+   z-index:-2;
+   direction: ltr;
+   left:  0;
+   bottom:0;
+   top:0;
+   width: 25%;
+   overflow:hidden;
+   display:block;
+   background-color: #8B0404;
+}
+
+.ms-content 
+{
+   width: auto;
+   float:none;
+}
+

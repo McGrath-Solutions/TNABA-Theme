@@ -1,0 +1,7 @@
+; $Id$
+name = Artisteer Content
+description = Module for import Artisteer content in Drupal.
+core = 7.x
+version = VERSION
+files[] = art_content.module
+dependencies[] = path

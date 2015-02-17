@@ -107,6 +107,7 @@ ul.ms-vmenu a
    font-weight: bold;
    font-style: normal;
    text-decoration: none;
+   padding-bottom: 5px;
 }
 
 .ms-postcontent a, .ms-postcontent a:link
@@ -1608,7 +1609,8 @@ input.ms-button
    
 }
 .ms-button.active, .ms-button.active:hover, .ms-button.active:focus {
-   /*color: #ABB0D8 !important;*/
+   /*color: #ABB0D8 !important;
+*/
    color: #FFFFFF !important;
 }
 
@@ -1897,7 +1899,8 @@ input[type="checkbox"]:hovered + label span.span-item{
 input[type="checkbox"]:checked + label span.span-item {
     content: url('images/checkboxicon.png');
 }
-/*
+
+/*
 label.ms-radiobutton:before
 {
    background: #F9FAFB;
@@ -2013,7 +2016,8 @@ label.ms-checkbox.ms-checked:after
    position: absolute;
    left: 0;
    top: 0;
-}*/
+}
+*/
 
 .ms-post
 {
@@ -2109,9 +2113,11 @@ pre
 
 .ms-postmetadataheader
 {
-   /*background: #FCFCFC;*/
+   /*background: #FCFCFC;
+*/
    background: #ffffff;
-   /*background: rgba(252, 252, 252, 0.3);*/
+   /*background: rgba(252, 252, 252, 0.3);
+*/
    margin:0 auto;
    position:relative;
    z-index:1;
@@ -2422,7 +2428,8 @@ blockquote p,
    color: #F9F8B9;
    font-family: Arial, 'Arial Unicode MS', Helvetica, Sans-Serif;
    font-weight: bold;
-   font-style: normal;;
+   font-style: normal;
+;
 }
 
 .ms-footer p 
@@ -2467,7 +2474,8 @@ blockquote p,
    width:1000px;
    padding:20px;
    padding-right: 20px;
-   padding-left: 20px; 
+   padding-left: 20px;
+ 
 }
 footer {
   background: #000000;
@@ -2832,6 +2840,36 @@ li.messages
 #user-login-form
 {
 	text-align: left;
+        
+}
+
+#user-login{
+    margin: 10px;
+    border:solid 2px #b3b3b3;
+    -moz-border-radius-topleft: 32px;
+    -moz-border-radius-topright:33px;
+    -moz-border-radius-bottomleft:32px;
+    -moz-border-radius-bottomright:33px;
+    -webkit-border-top-left-radius:32px;
+    -webkit-border-top-right-radius:33px;
+    -webkit-border-bottom-left-radius:32px;
+    -webkit-border-bottom-right-radius:33px;
+    border-top-left-radius:32px;
+    border-top-right-radius:33px;
+    border-bottom-left-radius:32px;
+    border-bottom-right-radius:33px;
+}
+
+#login-form{
+    border-right: silver solid thin;
+    padding: 5px 30px;
+    float: left;
+    margin: 30px 0;
+}
+
+#create-account{
+    padding: 100px 30px; 
+    float: left;
 }
 
 #user-login-form ul li

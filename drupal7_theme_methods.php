@@ -345,6 +345,20 @@ function tnaba4_form_alter(&$form, &$form_state, $form_id) {
     $form['#attributes'] = array('class' => array('ms-search')); // Add Artisteer class
     $form['actions']['submit']['#attributes'] = array('class' => array('ms-search-button')); // Add Artisteer class
   }
+  if(strstr($form_id, 'user_')){
+    if (arg(0) == 'user' && arg(1) == 'register') {
+        drupal_set_title(t('Create MyTNABA Account'));
+    }
+    elseif (arg(0) == 'user' && arg(1) == 'password') {
+      drupal_set_title(t('Forgot MyTNABA Password'));
+    }
+    elseif (arg(0) == 'user' && arg(1) == 'login') {
+      drupal_set_title(t('MyTNABA Login'));
+    }
+    elseif (arg(0) == 'user' && arg(1) == '') {
+      drupal_set_title(t('MyTNABA Login'));
+    }
+  }
 }
 
 function art_label($variables) {
@@ -464,4 +478,38 @@ function tnaba4_form_element($variables) {
   $output .= "</div>\n";
 
   return $output;
+}
+
+// load user_login.tpl.php form
+function tnaba4_theme() {
+    $hooks['user_login'] = array(
+    'template' => 'user_login',
+    'render element' => 'form',
+  );
+  return $hooks;
+}
+
+// Modify user login form
+function tnaba4_preprocess_user_login(&$variables) {
+    // drupal_set_message('<pre>' . print_r($variables, TRUE) . '</pre>');
+    $variables['create'] = '<a href="user/register" class="ms-button">Create MyTNABA Account</a>';
+    $variables['forgotpass'] = '<a href="user/password">Forgot Password?</a>';
+
+    $variables['form']['name']['#size'] = 40;
+    $variables['form']['name']['#description'] = '';
+    $variables['form']['pass']['#size'] = 40;
+    $variables['form']['pass']['#description'] = '';
+    $variables['rendered'] = drupal_render_children($variables['form']);
+}
+
+// Remove tabs from user login, reset password, and create user forms
+function tnaba4_menu_local_tasks_alter(&$data) {
+    $no_tabs = array('login', 'register', 'password');
+      foreach ($data['tabs'][0]['output'] as $key => $value) {
+        foreach($no_tabs as $tab){
+            if ($value['#link']['path'] == "user/" . $tab) {
+                unset($data['tabs'][0]['output'][$key]);
+            }
+        } 
+    }
 }
